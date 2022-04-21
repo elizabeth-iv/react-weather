@@ -1,76 +1,74 @@
-import './App.css';
+import React, { useState } from 'react';
+import './index.css';
+
+const api = {
+  key: "f5686ded79f599145adc079ee949161e",
+  base: "https://api.openweathermap.org/data/2.5/"
+}
 
 function App() {
-  const api = {
-    key: "f5686ded79f599145adc079ee949161e",
-    url: "https://api.openweathermap.org/data/2.5/"
+  const [query, setQuery] = useState('');
+  const [weather, setWeather] = useState({});
+
+  const search = evt => {
+    if (evt.key === "Enter") {
+      fetch(`${api.base}weather?zip=${query}&units=imperial&APPID=${api.key}`)
+        .then(res => res.json())
+        .then(result => {
+          setWeather(result);
+          setQuery('');
+          console.log(result);
+        });
+    }
   }
-  const getTodaysDate = (d) => {
-    const months = [
-      'January',
 
-      'February',
- 
-      'March',
- 
-      'April',
- 
-      'May',
- 
-      'June',
- 
-      'July',
- 
-      'August',
- 
-      'September',
- 
-      'October',
- 
-      'November',
- 
-      'December'
-    ];
+  const dateBuilder = (d) => {
+    let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-    const days = [
-      'Monday',
+    let day = days[d.getDay()];
+    let date = d.getDate();
+    let month = months[d.getMonth()];
+    let year = d.getFullYear();
 
-      'Tuesday',
- 
-      'Wednesday',
- 
-      'Thursday',
- 
-      'Friday',
- 
-      'Saturday',
- 
-      'Sunday'
-    ]
-
-    var day = days[d.getDay()]; //Fetches day of the week
-    var date = d.getDate(); //Fetches the date
-    var month = months[d.getMonth()]; //Fetches the month
-    var year = d.getFullYear();
-      return `${day} ${date} ${month} ${year}`
+    return `${day}, ${month} ${date} ${year}`
   }
+
   return (
-    <div className='main'>
-      <main> 
-        <input type='text' className='search-bar' placeholder='Enter Zipcode'>
-        </input>
+    <div className={(typeof weather.main != "undefined") ? ((weather.main.temp > 75) ? 'app warm' : 'app') : 'app'}>
+      <main>
+        <div className="search-box">
+          <input 
+            type="text"
+            className="search-bar"
+            placeholder="Search..."
+            onChange={e => setQuery(e.target.value)}
+            value={query}
+            onKeyPress={search}
+          />
+        </div>
+        {(typeof weather.main != "undefined") ? (
         <div>
-          <div className='weather-container'>
-            <div className='weather'>
-              <div className='temp'> 65°F </div>
-              <div className='condition'> Clear </div>
-              <div className='city'> Charlotte </div>
-        <br></br>
-        <div className='date'>{getTodaysDate(new Date())}</div>
-        <br></br>
+          <div className="location-box">
+            <div className="location">{weather.name}, {weather.sys.country}</div>
+            <div className="date">{dateBuilder(new Date())}</div>
+          </div>
+          <div className="weather-box">
+            <div className="temp">
+              {Math.round(weather.main.temp)}°F
+            </div>
+            <div className="weather">{weather.weather[0].main}</div>
+            <div className="temp">
+              <ul>
+                <li>High: {Math.round(weather.main.temp_max)}°F </li> 
+                <li>Low: {Math.round(weather.main.temp_min)}°F </li>
+                <li>Feels like: {Math.round(weather.main.feels_like)}°F</li>
+                <li>Humidity: {Math.round(weather.main.humidity)}%</li>
+              </ul>
             </div>
           </div>
         </div>
+        ) : ('')}
       </main>
     </div>
   );
